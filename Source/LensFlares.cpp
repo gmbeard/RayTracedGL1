@@ -50,7 +50,7 @@ constexpr VkDeviceSize GetIndirectDrawCountOffset()
 }
 constexpr RTGL1::ShIndirectDrawCommand *GetIndirectDrawCommandsArrayStart(void *pCullingInputBuffer)
 {
-    return (RTGL1::ShIndirectDrawCommand *)((uint8_t*)pCullingInputBuffer + GetIndirectDrawCommandsOffset());
+    return (RTGL1::ShIndirectDrawCommand *)(void const*)((uint8_t*)pCullingInputBuffer + GetIndirectDrawCommandsOffset());
 }
 
 
@@ -277,7 +277,7 @@ void RTGL1::LensFlares::Cull(VkCommandBuffer cmd, uint32_t frameIndex)
 
         VkDependencyInfoKHR info = {};
         info.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO_KHR;
-        info.bufferMemoryBarrierCount = std::size(bs);
+        info.bufferMemoryBarrierCount = size(bs);
         info.pBufferMemoryBarriers = bs;
 
         svkCmdPipelineBarrier2KHR(cmd, &info);
@@ -294,7 +294,7 @@ void RTGL1::LensFlares::Cull(VkCommandBuffer cmd, uint32_t frameIndex)
     };
     vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_COMPUTE,
                             cullPipelineLayout,
-                            0, std::size(sets), sets,
+                            0, size(sets), sets,
                             0, nullptr);
     
     uint32_t wgCount = Utils::GetWorkGroupCount(cullingInputCount, COMPUTE_INDIRECT_DRAW_FLARES_GROUP_SIZE_X);
@@ -369,7 +369,7 @@ void RTGL1::LensFlares::SyncForDraw(VkCommandBuffer cmd, uint32_t frameIndex)
 
     VkDependencyInfoKHR info = {};
     info.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO_KHR;
-    info.bufferMemoryBarrierCount = std::size(bs);
+    info.bufferMemoryBarrierCount = size(bs);
     info.pBufferMemoryBarriers = bs;
 
     svkCmdPipelineBarrier2KHR(cmd, &info);
@@ -392,7 +392,7 @@ void RTGL1::LensFlares::Draw(VkCommandBuffer cmd, uint32_t frameIndex)
         rasterDescSet
     };
     vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, rasterPipelines->GetPipelineLayout(),
-                            0, std::size(sets), sets,
+                            0, size(sets), sets,
                             0, nullptr);       
 
     VkBuffer vb = vertexBuffer->GetDeviceLocal();
@@ -425,7 +425,7 @@ void RTGL1::LensFlares::CreatePipelineLayouts(VkDescriptorSetLayout uniform, VkD
 
         VkPipelineLayoutCreateInfo layoutInfo = {};
         layoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        layoutInfo.setLayoutCount = std::size(s);
+        layoutInfo.setLayoutCount = size(s);
         layoutInfo.pSetLayouts = s;
 
         VkResult r = vkCreatePipelineLayout(device, &layoutInfo, nullptr, &vertFragPipelineLayout);
@@ -443,7 +443,7 @@ void RTGL1::LensFlares::CreatePipelineLayouts(VkDescriptorSetLayout uniform, VkD
 
         VkPipelineLayoutCreateInfo layoutInfo = {};
         layoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        layoutInfo.setLayoutCount = std::size(s);
+        layoutInfo.setLayoutCount = size(s);
         layoutInfo.pSetLayouts = s;
 
         VkResult r = vkCreatePipelineLayout(device, &layoutInfo, nullptr, &cullPipelineLayout);
@@ -526,7 +526,7 @@ void RTGL1::LensFlares::CreateCullDescriptors()
 
         VkDescriptorSetLayoutCreateInfo info = {};
         info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-        info.bindingCount = std::size(binding);
+        info.bindingCount = size(binding);
         info.pBindings = binding;
 
         VkResult r = vkCreateDescriptorSetLayout(device, &info, nullptr, &cullDescSetLayout);
@@ -582,7 +582,7 @@ void RTGL1::LensFlares::CreateCullDescriptors()
             w.pBufferInfo = &b;
         }
 
-        vkUpdateDescriptorSets(device, std::size(writes), writes, 0, nullptr);
+        vkUpdateDescriptorSets(device, size(writes), writes, 0, nullptr);
     }
 }
 

@@ -80,7 +80,7 @@ RTGL1::FramebufferImageIndex RTGL1::SuperResolution::Apply(
     };
     vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_COMPUTE,
                             pipelineLayout,
-                            0, std::size(sets), sets,
+                            0, size(sets), sets,
                             0, nullptr);
 
 

@@ -49,7 +49,7 @@ RTGL1::Bloom::Bloom(
         _tonemapping->GetDescSetLayout()
     };
 
-    CreatePipelineLayout(setLayouts, std::size(setLayouts));
+    CreatePipelineLayout(setLayouts, size(setLayouts));
     CreatePipelines(_shaderManager.get());
 
     static_assert(sizeof(downsamplePipelines) / sizeof(downsamplePipelines[0]) == COMPUTE_BLOOM_STEP_COUNT, "Recheck COMPUTE_BLOOM_STEP_COUNT");
@@ -89,7 +89,7 @@ void RTGL1::Bloom::Prepare(VkCommandBuffer cmd, uint32_t frameIndex,
 
     vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_COMPUTE,
                             pipelineLayout,
-                            0, std::size(sets), sets,
+                            0, size(sets), sets,
                             0, nullptr);
 
     for (int i = 0; i < COMPUTE_BLOOM_STEP_COUNT; i++)
@@ -169,7 +169,7 @@ RTGL1::FramebufferImageIndex RTGL1::Bloom::Apply(VkCommandBuffer cmd, uint32_t f
 
     vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_COMPUTE,
                             pipelineLayout,
-                            0, std::size(sets), sets,
+                            0, size(sets), sets,
                             0, nullptr);
 
     vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, applyPipelines[isSourcePing]);

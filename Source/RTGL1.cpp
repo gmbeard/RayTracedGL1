@@ -83,7 +83,7 @@ RgResult rgCreateInstance(const RgInstanceCreateInfo *pInfo, RgInstance *pResult
 
     try
     {
-        G_DEVICES[rgInstance] = std::make_unique<VulkanDevice>(pInfo);
+        G_DEVICES[rgInstance] = std::unique_ptr<VulkanDevice>(new VulkanDevice(pInfo));
         *pResult = rgInstance;
     }
     // TODO: VulkanDevice must clean all the resources if initialization failed!

@@ -6,6 +6,18 @@ RTGL1 is a library that simplifies the process of porting applications with fixe
 
 It's achievable with hardware accelerated ray tracing, low sample per pixel count and utilizing denoising algorithms to improve the image quality by aggressively reusing spatio-temporal data.
 
+## Pre-requisites 
+- `$ git clone -b feature/cmake-export --depth=1 https://github.com/gmbeard/DLSS.git`
+
+## Building
+- `$ mkdir build && cd build`
+- `$ cmake ..`
+- `$ cmake --build .`
+
+## Installing
+- `$ cmake -DCMAKE_INSTALL_PREFIX=<Install Dir.> ..` (Only necessary if you wish to install RTGL1 to a location other than the default)
+- `$ cmake --build . --target install`
+
 ## Screenshots
 
 Test Scene

@@ -1,14 +1,25 @@
 cmake_minimum_required(VERSION 3.15)
 project(RayTracedGL1 CXX C)
 
-set(CMAKE_CXX_STANDARD 11)
+option(
+    RTGL1_SUPERBUILD
+    "Super-build mode"
+    ON
+)
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+
+if(RTGL1_SUPERBUILD)
+    include(SuperBuild)
+    return()
+endif()
+
+include(CMakePackageConfigHelpers)
+
+set(CMAKE_CXX_STANDARD 14)
 
 # Vulkan
-message(STATUS "Adding Vulkan. VulkanSDK: $ENV{VULKAN_SDK}")
 find_package(Vulkan REQUIRED)
-add_library(Vulkan INTERFACE)
-target_include_directories(Vulkan INTERFACE ${Vulkan_INCLUDE_DIRS})
-target_link_libraries(Vulkan INTERFACE ${Vulkan_LIBRARIES})
 
 set(PublicHeaders 
     Include/RTGL1/RTGL1.h
@@ -191,88 +202,123 @@ option(RG_WITH_NVIDIA_DLSS      "Build RTGL1 with Nvidia DLSS"              ON)
 option(RG_WITH_EXAMPLES         "Add examples project"                      OFF)
 
 
-# for KTX-Software
-add_definitions(-DKHRONOS_STATIC -DLIBKTX)
-
-
-# options to definitions
-if (RG_WITH_EXPORTS)
-    message(STATUS "RG_WITH_EXPORTS enabled. RTGL1 functions are exported.")
-    add_definitions(-DRG_LIBRARY_EXPORTS)
-endif()
-
-if (RG_WITH_SURFACE_WIN32)
-    message(STATUS "RG_WITH_SURFACE_WIN32 enabled")
-    add_definitions(-DNOMINMAX)
-    add_definitions(-DRG_USE_SURFACE_WIN32)
-    add_definitions(-DVK_USE_PLATFORM_WIN32_KHR)
-endif()
-if (RG_WITH_SURFACE_METAL)
-    message(STATUS "RG_WITH_SURFACE_METAL enabled")
-    add_definitions(-DRG_USE_SURFACE_METAL)
-    add_definitions(-DVK_USE_PLATFORM_METAL_EXT)
-endif()
-if (RG_WITH_SURFACE_WAYLAND)
-    message(STATUS "RG_WITH_SURFACE_WAYLAND enabled")
-    add_definitions(-DRG_USE_SURFACE_WAYLAND)
-    add_definitions(-DVK_USE_PLATFORM_WAYLAND_KHR)
-endif()
-if (RG_WITH_SURFACE_XCB)
-    message(STATUS "RG_WITH_SURFACE_XCB enabled")
-    add_definitions(-DRG_USE_SURFACE_XCB)
-    add_definitions(-DVK_USE_PLATFORM_XCB_KHR)
-endif()
-if (RG_WITH_SURFACE_XLIB)
-    message(STATUS "RG_WITH_SURFACE_XLIB enabled")
-    add_definitions(-DRG_USE_SURFACE_XLIB)
-    add_definitions(-DVK_USE_PLATFORM_XLIB_KHR)
-endif()
-
-
 add_library(RayTracedGL1 SHARED  
     ${Sources}
     ${KTXSources}
     ${PublicHeaders}
 )
 
+# for KTX-Software
+target_compile_definitions(RayTracedGL1 PRIVATE KHRONOS_STATIC LIBKTX)
+
+# options to definitions
+if (RG_WITH_EXPORTS)
+    message(STATUS "RG_WITH_EXPORTS enabled. RTGL1 functions are exported.")
+    target_compile_definitions(RayTracedGL1 PUBLIC RG_LIBRARY_EXPORTS)
+endif()
+
+if (RG_WITH_SURFACE_WIN32)
+    message(STATUS "RG_WITH_SURFACE_WIN32 enabled")
+    target_compile_definitions(RayTracedGL1 PRIVATE NOMINMAX)
+    target_compile_definitions(RayTracedGL1 PUBLIC RG_USE_SURFACE_WIN32 VK_USE_PLATFORM_WIN32_KHR)
+endif()
+if (RG_WITH_SURFACE_METAL)
+    message(STATUS "RG_WITH_SURFACE_METAL enabled")
+    target_compile_definitions(RayTracedGL1 PUBLIC RG_USE_SURFACE_METAL VK_USE_PLATFORM_METAL_EXT)
+endif()
+if (RG_WITH_SURFACE_WAYLAND)
+    message(STATUS "RG_WITH_SURFACE_WAYLAND enabled")
+    target_compile_definitions(RayTracedGL1 PUBLIC RG_USE_SURFACE_WAYLAND VK_USE_PLATFORM_WAYLAND_KHR)
+endif()
+if (RG_WITH_SURFACE_XCB)
+    message(STATUS "RG_WITH_SURFACE_XCB enabled")
+    target_compile_definitions(RayTracedGL1 PUBLIC RG_USE_SURFACE_XCB VK_USE_PLATFORM_XCB_KHR)
+endif()
+if (RG_WITH_SURFACE_XLIB)
+    message(STATUS "RG_WITH_SURFACE_XLIB enabled")
+    target_compile_definitions(RayTracedGL1 PUBLIC RG_USE_SURFACE_XLIB VK_USE_PLATFORM_XLIB_KHR)
+endif()
+
+
 # KTX
-target_include_directories(RayTracedGL1 PRIVATE "Source/KTX/include")
-target_include_directories(RayTracedGL1 PRIVATE "Source/KTX/include" "Source/KTX/other_include" "Source/KTX/lib/basisu/zstd")
+target_include_directories(
+    RayTracedGL1
+    PRIVATE
+        "${CMAKE_CURRENT_LIST_DIR}/Source/KTX/include"
+        "${CMAKE_CURRENT_LIST_DIR}/Source/KTX/other_include"
+        "${CMAKE_CURRENT_LIST_DIR}/Source/KTX/lib/basisu/zstd"
+)
 
 # DLSS
 if (RG_WITH_NVIDIA_DLSS)
     message(STATUS "RG_USE_NVIDIA_DLSS enabled")
-    add_definitions(-DRG_USE_NVIDIA_DLSS)
+    find_package(DLSS REQUIRED)
+    target_compile_definitions(RayTracedGL1 PUBLIC RG_USE_NVIDIA_DLSS)
+    target_link_libraries(RayTracedGL1 PRIVATE DLSS::dlss)
 
-    if (DEFINED ENV{DLSS_SDK_PATH})
-        message(STATUS "Found DLSS SDK: $ENV{DLSS_SDK_PATH}")
-        target_include_directories(RayTracedGL1 PRIVATE "$ENV{DLSS_SDK_PATH}/include")
-        if (WIN32)
-            string(TOUPPER "${CMAKE_BUILD_TYPE}" BUILD_TYPE )
-            if (BUILD_TYPE STREQUAL "DEBUG")
-                target_link_libraries(RayTracedGL1 PRIVATE "$ENV{DLSS_SDK_PATH}/lib/Windows_x86_64/x86_64/nvsdk_ngx_d_dbg.lib")
-            else()
-                target_link_libraries(RayTracedGL1 PRIVATE "$ENV{DLSS_SDK_PATH}/lib/Windows_x86_64/x86_64/nvsdk_ngx_d.lib")
-            endif()
-        else()
-            target_link_libraries(RayTracedGL1 PRIVATE "$ENV{DLSS_SDK_PATH}/lib/Linux_x86_64/libnvsdk_ngx.a")
-            target_link_libraries(RayTracedGL1 PRIVATE ${CMAKE_DL_LIBS})
-            target_link_libraries(RayTracedGL1 PRIVATE libstdc++)
-        endif()
-    else()
-        message(FATAL_ERROR 
-            "Can't find DLSS_SDK_PATH environment variable. "
-            "Please, provide the path to https://github.com/NVIDIA/DLSS, to configure the library")
-    endif()
+    #if (DEFINED ENV{DLSS_SDK_PATH})
+    #    message(STATUS "Found DLSS SDK: $ENV{DLSS_SDK_PATH}")
+    #    target_include_directories(RayTracedGL1 PRIVATE "$ENV{DLSS_SDK_PATH}/include")
+    #    if (WIN32)
+    #        string(TOUPPER "${CMAKE_BUILD_TYPE}" BUILD_TYPE )
+    #        if (BUILD_TYPE STREQUAL "DEBUG")
+    #            target_link_libraries(RayTracedGL1 PRIVATE "$ENV{DLSS_SDK_PATH}/lib/Windows_x86_64/x86_64/nvsdk_ngx_d_dbg.lib")
+    #        else()
+    #            target_link_libraries(RayTracedGL1 PRIVATE "$ENV{DLSS_SDK_PATH}/lib/Windows_x86_64/x86_64/nvsdk_ngx_d.lib")
+    #        endif()
+    #    else()
+    #        target_link_libraries(RayTracedGL1 PRIVATE "$ENV{DLSS_SDK_PATH}/lib/Linux_x86_64/libnvsdk_ngx.a")
+    #        target_link_libraries(RayTracedGL1 PRIVATE ${CMAKE_DL_LIBS})
+    #    endif()
+    #else()
+    #    message(FATAL_ERROR 
+    #        "Can't find DLSS_SDK_PATH environment variable. "
+    #        "Please, provide the path to https://github.com/NVIDIA/DLSS, to configure the library")
+    #endif()
 endif()
 
 # Vulkan
-target_link_libraries(RayTracedGL1 PUBLIC Vulkan)
-target_include_directories(RayTracedGL1 PUBLIC "Include")
-
+target_link_libraries(RayTracedGL1 PUBLIC Vulkan::Vulkan)
+target_include_directories(
+    RayTracedGL1
+    PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Include>
+    $<INSTALL_INTERFACE:include>
+)
 
 if (RG_WITH_EXAMPLES)
     set(RTGL1_EXAMPLES_STANDALONE OFF CACHE BOOL "" FORCE)
     set(RTGL1_SDK_PATH "${CMAKE_SOURCE_DIR}")
     add_subdirectory(Tests)
 endif()
+
+configure_package_config_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/RayTracedGL1Config.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/RayTracedGL1Config.cmake"
+    INSTALL_DESTINATION "lib/cmake/RayTracedGL1"
+)
+
+install(
+    TARGETS RayTracedGL1
+    EXPORT RayTracedGL1Exports
+    ARCHIVE DESTINATION "lib"
+    LIBRARY DESTINATION "lib"
+)
+
+install(
+    DIRECTORY "Include/RTGL1/"
+    DESTINATION "include/RTGL1"
+)
+
+install(
+    FILES
+        "${CMAKE_CURRENT_BINARY_DIR}/RayTracedGL1Config.cmake"
+    DESTINATION
+        "lib/cmake/RayTracedGL1"
+)
+
+install(
+    EXPORT RayTracedGL1Exports
+    NAMESPACE RayTracedGL1::
+    DESTINATION "lib/cmake/RayTracedGL1"
+)

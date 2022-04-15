@@ -19,6 +19,7 @@
 // SOFTWARE.
 
 #include "RasterizerPipelines.h"
+#include "Utils.h"
 
 #include <array>
 #include <set>
@@ -417,12 +418,12 @@ VkPipeline RTGL1::RasterizerPipelines::CreatePipeline(RgRasterizedGeometryStateF
 
     VkPipelineDynamicStateCreateInfo dynamicInfo = {};
     dynamicInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-    dynamicInfo.dynamicStateCount = dynamicState.isEnabled ? std::size(dynamicStates) : 0;
+    dynamicInfo.dynamicStateCount = dynamicState.isEnabled ? size(dynamicStates) : 0;
     dynamicInfo.pDynamicStates = dynamicStates;
 
     VkGraphicsPipelineCreateInfo plInfo = {};
     plInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-    plInfo.stageCount = std::size(shaderStages);
+    plInfo.stageCount = size(shaderStages);
     plInfo.pStages = shaderStages;
     plInfo.pVertexInputState = &vertexInputInfo;
     plInfo.pInputAssemblyState = &inputAssembly;

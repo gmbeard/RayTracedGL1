@@ -913,9 +913,10 @@ void VertexCollector::InsertVertexPreprocessFinishBarrier(VkCommandBuffer cmd)
     bool isDynamic = filtersFlags & VertexCollectorFilterTypeFlagBits::CF_DYNAMIC;
     GetVertBufferCopyInfos(!isDynamic, vertCopyInfos);
 
+    size_t constexpr kBarrierSize = 10;
 
-    VkBufferMemoryBarrier barriers[10];
-    assert(std::size(barriers) >= vertCopyInfos.size() + 1);
+    VkBufferMemoryBarrier barriers[kBarrierSize];
+    assert(kBarrierSize >= vertCopyInfos.size() + 1);
     uint32_t barrierCount = 0;
 
     for (const auto &cp : vertCopyInfos)

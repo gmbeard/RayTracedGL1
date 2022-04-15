@@ -23,6 +23,7 @@
 #include "CmdLabel.h"
 #include "Matrix.h"
 #include "Generated/ShaderCommonC.h"
+#include "Utils.h"
 
 
 constexpr uint32_t DECAL_MAX_COUNT = 4096;
@@ -64,7 +65,7 @@ RTGL1::DecalManager::DecalManager(
         _textureManager->GetDescSetLayout(),
         descSetLayout
     };
-    CreatePipelineLayout(setLayouts, std::size(setLayouts));
+    CreatePipelineLayout(setLayouts, size(setLayouts));
     CreatePipelines(_shaderManager.get());
 }
 
@@ -189,7 +190,7 @@ void RTGL1::DecalManager::Draw(VkCommandBuffer cmd, uint32_t frameIndex, const s
 
     vkCmdBindDescriptorSets(
         cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout,
-        0, std::size(sets), sets,
+        0, size(sets), sets,
         0, nullptr);
 
     vkCmdSetScissor(cmd, 0, 1, &renderArea);
@@ -386,12 +387,12 @@ void RTGL1::DecalManager::CreatePipelines(const ShaderManager *shaderManager)
 
     VkPipelineDynamicStateCreateInfo dynamicInfo = {};
     dynamicInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-    dynamicInfo.dynamicStateCount = std::size(dynamicStates);
+    dynamicInfo.dynamicStateCount = size(dynamicStates);
     dynamicInfo.pDynamicStates = dynamicStates;
 
     VkGraphicsPipelineCreateInfo info = {};
     info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-    info.stageCount = std::size(stages);
+    info.stageCount = size(stages);
     info.pStages = stages;
     info.pVertexInputState = &vertexInput;
     info.pInputAssemblyState = &inputAssembly;

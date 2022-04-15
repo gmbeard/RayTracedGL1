@@ -23,6 +23,8 @@
 #include "Common.h"
 #include "RTGL1/RTGL1.h"
 
+#include <cstddef>
+
 namespace RTGL1
 {
 
@@ -78,10 +80,16 @@ namespace Utils
 };
 
 template<typename T>
-constexpr T clamp(const T &v, const T &v_min, const T &v_max)
+T clamp(const T &v, const T &v_min, const T &v_max)
 {
     assert(v_min <= v_max);
     return std::min(v_max, std::max(v_min, v));
+}
+
+template<typename T, std::size_t N>
+constexpr auto size(T const(&)[N]) noexcept -> std::size_t
+{
+    return N;
 }
 
 }

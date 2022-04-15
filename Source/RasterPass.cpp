@@ -114,7 +114,7 @@ void RTGL1::RasterPass::CreateFramebuffers(uint32_t renderWidth, uint32_t render
             depthViews[i]
         };
 
-        fbInfo.attachmentCount = std::size(attchs);
+        fbInfo.attachmentCount = size(attchs);
         fbInfo.pAttachments = attchs;
 
         {

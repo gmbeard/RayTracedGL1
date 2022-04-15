@@ -28,6 +28,8 @@
 #include "BlueNoise.h"
 #include "Utils.h"
 
+#include <type_traits>
+
 namespace RTGL1
 {
 
@@ -105,7 +107,7 @@ void EffectBase::CreatePipelineLayout(const VkDescriptorSetLayout(&setLayouts)[D
     plLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     plLayoutInfo.setLayoutCount = DESC_SET_COUNT;
     plLayoutInfo.pSetLayouts = setLayouts;
-    plLayoutInfo.pushConstantRangeCount = std::is_same_v<std::nullptr_t, PUSH_CONST_T> ? 0 : 1;
+    plLayoutInfo.pushConstantRangeCount = std::is_same<std::nullptr_t, PUSH_CONST_T>::value ? 0 : 1;
     plLayoutInfo.pPushConstantRanges = &push;
 
     VkResult r = vkCreatePipelineLayout(device, &plLayoutInfo, nullptr, &pipelineLayout);
@@ -133,7 +135,7 @@ FramebufferImageIndex EffectBase::Dispatch(
 
     vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_COMPUTE,
                             pipelineLayout,
-                            0, std::size(descSets), descSets,
+                            0, DESC_SET_COUNT, descSets,
                             0, nullptr);
 
     vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, pipelines[isSourcePing]);

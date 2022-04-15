@@ -26,6 +26,7 @@
 #include "Generated/ShaderCommonC.h"
 #include "CmdLabel.h"
 #include "RgException.h"
+#include "Utils.h"
 
 namespace RTGL1
 {
@@ -420,9 +421,9 @@ void RTGL1::LightManager::CreateDescriptors()
 {
     VkResult r;
     
-    std::array<VkDescriptorSetLayoutBinding, std::size(BINDINGS)> bindings = {};
+    std::array<VkDescriptorSetLayoutBinding, size(BINDINGS)> bindings = {};
 
-    for (uint32_t i = 0; i < std::size(BINDINGS); i++)
+    for (uint32_t i = 0; i < size(BINDINGS); i++)
     {
         uint32_t bnd = BINDINGS[i];
         assert(i == bnd);
@@ -494,12 +495,12 @@ void RTGL1::LightManager::UpdateDescriptors(uint32_t frameIndex)
         lightListsForSpherical->GetPlainLightListDeviceLocalBuffer(),
         lightListsForSpherical->GetSectorToLightListRegionDeviceLocalBuffer(),
     };
-    static_assert(std::size(BINDINGS) == std::size(buffers), "");
+    static_assert(size(BINDINGS) == size(buffers), "");
 
-    std::array<VkDescriptorBufferInfo, std::size(BINDINGS)> bufs = {};
-    std::array<VkWriteDescriptorSet, std::size(BINDINGS)> wrts = {};
+    std::array<VkDescriptorBufferInfo, size(BINDINGS)> bufs = {};
+    std::array<VkWriteDescriptorSet, size(BINDINGS)> wrts = {};
 
-    for (uint32_t i = 0; i < std::size(BINDINGS); i++)
+    for (uint32_t i = 0; i < size(BINDINGS); i++)
     {
         uint32_t bnd = BINDINGS[i];
         // 'buffers' should be actually a map (binding->buffer), but a plain array works too, if this is true

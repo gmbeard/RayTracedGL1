@@ -91,7 +91,7 @@ RTGL1::FramebufferImageIndex RTGL1::Sharpening::Apply(
 
     vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_COMPUTE,
                             pipelineLayout,
-                            0, std::size(sets), sets,
+                            0, size(sets), sets,
                             0, nullptr);
 
     {
@@ -160,7 +160,7 @@ void RTGL1::Sharpening::CreatePipelines(const ShaderManager *shaderManager)
     entries[1].size = sizeof(data.useSimpleSharp);
 
     VkSpecializationInfo specInfo = {};
-    specInfo.mapEntryCount = std::size(entries);
+    specInfo.mapEntryCount = size(entries);
     specInfo.pMapEntries = entries;
     specInfo.dataSize = sizeof(data);
     specInfo.pData = &data;
